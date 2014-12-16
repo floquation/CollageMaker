@@ -3,6 +3,8 @@ package screens;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
@@ -43,7 +45,7 @@ public class EditorScreen extends Screen {
 	private static boolean runBruteForceUnique4 = false;
 	private static boolean runGA = false;
 	private static boolean runGAIndi = false;
-	private static boolean runGAIndiSmartFitness = true;
+	private static boolean runGAIndiSmartFitness = false; //true;
 	private static boolean runGAUnique = false;
 	private static boolean rerunAlgorithm =
 			 runBruteForceUnique2 || runBruteForceUnique3 || runBruteForceUnique4 ||
@@ -77,8 +79,24 @@ public class EditorScreen extends Screen {
 //		System.out.println("ImageRefListXML.importImage --> success = " + success);
 		
 	//Test: importImagesRecursively
-//		testRefListXML.importImagesFromFileSystem("C:\\Users\\Kevin van As\\Dropbox\\Java Projects\\CollageMaker\\Pictures\\");
+		testRefListXML.importImagesFromFileSystem("\\\\EQUIP_BUP\\photo\\2010\\10_10\\");
 		
+//		System.out.println("absolute path = " + new File("\\..\\This PC\\Equip_bup\\Foto\\2010").getAbsolutePath());
+		
+//		try {
+//			URI uri = new URI("file://This%20PC/Equip_bup/Foto/2010");
+//			uri = uri.parseServerAuthority();
+//			System.out.println("authority = " + uri.getAuthority());
+//			System.out.println("scheme = " + uri.getScheme());
+//			System.out.println("userInfo = " + uri.getUserInfo());
+//			System.out.println("rawFragment = " + uri.getRawFragment());
+//			System.out.println("host = " + uri.getHost());
+//			testRefListXML.importImagesFromFileSystem(uri);
+//		} catch (URISyntaxException e1) {
+//			e1.printStackTrace();
+//		}
+		
+		//Testing:
 //		Color color = ImageTools.computeAvgColor(testRefListXML.getImage(1));
 //		testRefListXML.getImage(0).color = color;
 //		System.out.println(color.toString());

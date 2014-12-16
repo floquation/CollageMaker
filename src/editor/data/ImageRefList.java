@@ -2,6 +2,7 @@ package editor.data;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -63,6 +64,7 @@ public class ImageRefList {
 		if(bi!=null){
 			newImg.maximizeClip();
 			this.put(newImg);
+			newImg.clearImage(); // We are guaranteed to run out of memory if we keep all images in memory.
 			return true;
 		}
 		return false;
@@ -75,10 +77,16 @@ public class ImageRefList {
 	 * @param dirPwd
 	 */
 	private void importImagesRecursively(File parent){
+//		System.out.println("parent = " + parent.getPath());
+//		System.out.println("abs? " + parent.isAbsolute());
+//		System.out.println("dir? " + parent.isDirectory());
+//		System.out.println("exists? " + parent.exists());
 		if(parent==null || !parent.exists()) return;
 		
 		if(parent.isDirectory()){
+			System.out.println("-- Reading directory: " + parent.getPath() + " --");
 			File[] children = parent.listFiles();
+						
 			for(File child : children){
 				importImagesRecursively(child);
 			}
@@ -96,6 +104,16 @@ public class ImageRefList {
 	 * @param dirPwd
 	 */
 	public void importImagesFromFileSystem(String dirPwd){
+		importImagesRecursively(new File(dirPwd));
+	}
+	
+	/**
+	 * Recursively imports images from the given directory.
+	 * 
+	 * @author Kevin van As
+	 * @param dirPwd
+	 */
+	public void importImagesFromFileSystem(URI dirPwd){
 		importImagesRecursively(new File(dirPwd));
 	}
 	
