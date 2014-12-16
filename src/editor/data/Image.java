@@ -63,7 +63,20 @@ public class Image{
 		
 		return bi;
 	}
-		
+	
+	/**
+	 * Releases system resources by disposing the reference to the BufferedImage instance.
+	 */
+	public void clearImage(){
+		if(bi!=null){
+			bi.flush();
+			bi = null;
+		}
+	}
+	
+	/**
+	 * Disposing the current BufferedImage instance and reloads the image from file.
+	 */
 	public void generateImage(){
 		System.out.println("(Image) Starting loading image from file: \"" + pwd + "\".");
 		if(bi!=null){

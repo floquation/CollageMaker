@@ -50,3 +50,10 @@ Temporary Items
 
 # tmp folders
 bin
+
+
+# =========================
+# Application-specific
+# =========================
+
+src/settings.xml
