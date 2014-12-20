@@ -1,5 +1,7 @@
 package util;
 
+import editor.data.ResultXML.Grid.Element;
+
 public abstract class ArrayUtils {
 	
 	/**
@@ -179,6 +181,26 @@ public abstract class ArrayUtils {
 			str += "[";
 			for(int i = 0; i<array.length; i++){
 				str += array[i][j] + ", ";
+			}
+			str = str.substring(0, str.length()-2)+"]\n";
+		}
+		return str.substring(0, str.length()-1);
+	}
+
+
+	/**
+	 * Returns a 2D representation of "array".
+	 * 
+	 * @author Kevin van As
+	 * @param array
+	 * @return
+	 */
+	public static String toString(Element[][] array){
+		String str = "";
+		for(int j = 0; j<array.length; j++){
+			str += "[";
+			for(int i = 0; i<array.length; i++){
+				str += array[i][j].color.toString() + ":" + array[i][j].imgId + ", ";
 			}
 			str = str.substring(0, str.length()-2)+"]\n";
 		}

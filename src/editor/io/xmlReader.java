@@ -448,14 +448,19 @@ public abstract class xmlReader {
     	    	    			return null;
     	    	    		}
         	    		}else{
-        	    			System.err.println("xmlReader: unknown tag specified in \"image\" in " + xml + ". What is " + child.getNodeName() + "?");
+        	    			System.err.println("xmlReader: unknown tag specified in \"image\" in " + xml + ". What is \"" + child.getNodeName() + "\" supposed to be?");
         	    			return null;
         	    		}
         	    		
     	    		}//for-loop (j)
     	    		    	       	    		
-    	    		if(pwd == null || name == null || color == null){
-    	    			System.err.println("xmlReader: tag \"image\" in \"" + xml + "\" is missing children. Required: (String)pwd, (String)name, (unique int)id, (hexagonal)color, (attributes: (int)x,(int)y,(int)w,(int)h)srcClip.");
+    	    		if(pwd == null || name == null /*|| color == null*/){
+    	    			System.err.println("xmlReader: tag \"image\" in \"" + xml + "\" is missing children.\n" +
+    	    						"Required ([] = optional): (String)pwd, (String)name, (unique int)id, [(hexagonal)color], (attributes: (int)x,(int)y,(int)w,(int)h)srcClip.\n" +
+	    	    					pwd==null? "pwd==null" : ("pwd=OK: "+pwd) + "; " +
+	    	    					name==null?"name==null": ("name=OK: "+name) + "; " +
+	    	    					color==null?"color==null": ("color=OK: "+color) + ";"
+    	    					);
     	    			return null;
     	    		}
     	    		

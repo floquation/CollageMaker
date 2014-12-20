@@ -113,28 +113,36 @@ public class xmlWriter {
         // create data elements and place them under root
             Set<Integer> keys = refList.keySet();
             for(int key : keys){
-            	e = dom.createElement("image");
-            	e.setAttribute("id", "" + key);
-
             	Image img = refList.getImage(key);
-            	Element newChild = dom.createElement("pwd");
-                newChild.appendChild(dom.createTextNode(img.getPath()));
-            	e.appendChild(newChild);
-            	newChild = dom.createElement("name");
-                newChild.appendChild(dom.createTextNode(img.getName()));
-            	e.appendChild(newChild);
-            	newChild = dom.createElement("color");
-                newChild.appendChild(dom.createTextNode(Integer.toHexString(img.getColor().getRGB()).substring(2))); //Gets the hexa in RGB format, cutting the alpha away using .substring(2)
-            	e.appendChild(newChild);
-            	newChild = dom.createElement("srcClip");
-            	Rectangle srcClip = refList.getImage(key).getClipRect();
-            	newChild.setAttribute("x", ""+srcClip.x);
-            	newChild.setAttribute("h", ""+srcClip.h);
-            	newChild.setAttribute("w", ""+srcClip.w);
-            	newChild.setAttribute("y", ""+srcClip.y);
-            	e.appendChild(newChild);
-            	                
-                rootEle.appendChild(e);
+            	try{
+	            	e = dom.createElement("image");
+	            	e.setAttribute("id", "" + key);
+	
+	            	Element newChild = dom.createElement("pwd");
+	                newChild.appendChild(dom.createTextNode(img.getPath()));
+	            	e.appendChild(newChild);
+	            	newChild = dom.createElement("name");
+	                newChild.appendChild(dom.createTextNode(img.getName()));
+	            	e.appendChild(newChild);
+	            	if(img.getColor() != null){ //Optional TODO: What to do if color not yet set?
+		            	newChild = dom.createElement("color");
+	            		newChild.appendChild(dom.createTextNode(Integer.toHexString(img.getColor().getRGB()).substring(2))); //Gets the hexa in RGB format, cutting the alpha away using .substring(2)    		
+	            		e.appendChild(newChild);
+		            }
+	                newChild = dom.createElement("srcClip");
+	            	Rectangle srcClip = refList.getImage(key).getClipRect();
+	            	newChild.setAttribute("x", ""+srcClip.x);
+	            	newChild.setAttribute("h", ""+srcClip.h);
+	            	newChild.setAttribute("w", ""+srcClip.w);
+	            	newChild.setAttribute("y", ""+srcClip.y);
+	            	e.appendChild(newChild);
+	            	                
+	                rootEle.appendChild(e);
+            	}catch(NullPointerException eNull){
+            		if(img!=null){
+                		System.out.println("(xmlWriter) Skipping image (something was null): " + img.getPath() );            			
+            		}
+            	}
             }
             
 

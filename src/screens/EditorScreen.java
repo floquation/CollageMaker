@@ -5,9 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
+
+import util.ArrayUtils;
 
 import algorithms.Algorithm;
 import algorithms.collageGenerators.CollageAlgorithmUtils;
@@ -21,6 +24,7 @@ import algorithms.collageGenerators.impl.CollageGA;
 import algorithms.collageGenerators.impl.CollageGA_Unique;
 import algorithms.collageGenerators.impl.CollageGA_indi;
 import algorithms.collageGenerators.impl.CollageGA_indi_smartFitness;
+import editor.data.Image;
 import editor.data.ImageRefList;
 import editor.data.ImageTools;
 import editor.data.ResultXML;
@@ -37,6 +41,8 @@ public class EditorScreen extends Screen {
 		super(game);
 	}
 						
+	private static boolean newImages = false;
+	
 	private static boolean runCheckAll = false;
 	private static boolean runCheckAllROUnique = false;
 	private static boolean runBruteForceUnique = false;
@@ -45,7 +51,7 @@ public class EditorScreen extends Screen {
 	private static boolean runBruteForceUnique4 = false;
 	private static boolean runGA = false;
 	private static boolean runGAIndi = false;
-	private static boolean runGAIndiSmartFitness = false; //true;
+	private static boolean runGAIndiSmartFitness = true; //true;
 	private static boolean runGAUnique = false;
 	private static boolean rerunAlgorithm =
 			 runBruteForceUnique2 || runBruteForceUnique3 || runBruteForceUnique4 ||
@@ -58,12 +64,14 @@ public class EditorScreen extends Screen {
 		//Test:
 		ImageRefList testRefListXML = xmlReader.readXML_refList(game.getGlobalVars().workspace + "\\refList.xml");
 		ResultXML testResultXML;
-		
 		if(!rerunAlgorithm){
-			testResultXML = xmlReader.readXML_result(testRefListXML, game.getGlobalVars().workspace + "\\new_result.xml");
+			testResultXML = xmlReader.readXML_result(testRefListXML, game.getGlobalVars().workspace + "\\new_result.xml"); //load old result for postprocessing reasons.
 		}else{
 			testResultXML = xmlReader.readXML_result(testRefListXML, game.getGlobalVars().workspace + "\\result.xml");
 		}
+		
+		System.out.println("orgImageId = " + testResultXML.orgImageId);
+		System.out.println(ArrayUtils.toString(testResultXML.grid.elements));
 		
 		if(testResultXML == null)	testResultXML = new ResultXML(); 		//auto-default if corrupted file
 		if(testRefListXML == null)	testRefListXML = new ImageRefList();	//auto-default if corrupted file
@@ -79,7 +87,9 @@ public class EditorScreen extends Screen {
 //		System.out.println("ImageRefListXML.importImage --> success = " + success);
 		
 	//Test: importImagesRecursively
-		testRefListXML.importImagesFromFileSystem("\\\\EQUIP_BUP\\photo\\2010\\10_10\\");
+		if(newImages){
+			testRefListXML.importImagesFromFileSystem("\\\\EQUIP_BUP\\photo\\2010\\10_10\\", false);
+		}
 		
 //		System.out.println("absolute path = " + new File("\\..\\This PC\\Equip_bup\\Foto\\2010").getAbsolutePath());
 		
@@ -119,9 +129,41 @@ public class EditorScreen extends Screen {
 //		game.setWindowSize(800, 300);
 //		game.setWindowCentered(true);
 
+	
+	//Select "main":
+		testResultXML.orgImageId=1799;
+		ImageTools.computeAvgColorGrid(testResultXML, testRefListXML.getImage(testResultXML.orgImageId));	
+		double aspectRatio = (
+				(double)testRefListXML.getImage(testResultXML.orgImageId).getImage().getHeight())/
+				testRefListXML.getImage(testResultXML.orgImageId).getImage().getWidth();
+		testResultXML.size.w=2000;
+		testResultXML.size.h=(int)(testResultXML.size.w*aspectRatio);	
+
+//		System.out.println("orgImageId = " + testResultXML.orgImageId);
+//		System.out.println(ArrayUtils.toString(testResultXML.grid.elements));
 		
+		Set<Integer> keySettmp = testRefListXML.keySet();
+		for (int key: keySettmp){
+			Image img = testRefListXML.getImage(key);
+			System.out.println(img.getName() + " has color: " + img.getColor());
+		}
+		
+	if(newImages){
 	//Compute colors: (this method sets grid.elements to a properly-sized array)
-		if(rerunAlgorithm) ImageTools.computeAvgColorGrid(testResultXML, testRefListXML.getImage(testResultXML.orgImageId));
+		double grid_aspectRatio = ((double)testResultXML.grid.size.h)/testResultXML.grid.size.w;
+		Set<Integer> keySet = testRefListXML.keySet();
+		for (int key: keySet){
+			Image img = testRefListXML.getImage(key);
+//			System.out.println("generate image");
+			img.generateImage();
+//			System.out.println("recompute image");
+//			img.recomputeImage();
+//			System.out.println("smartClip");
+			img.smartClip(aspectRatio, grid_aspectRatio, Image.SMARTCLIP_CENTERED); // Smart-clip & compute color
+//			System.out.println("clear");
+			img.clearImage();
+		}
+	}
 		
 	//Genetic Algorithm:
 		if(runGA) runGA(testResultXML, testRefListXML);
@@ -145,20 +187,27 @@ public class EditorScreen extends Screen {
 		}
 		
 	//Other output:
-		BufferedImage colorMap = ImageTools.generateColorMapImage(testResultXML);
-		try {
-			System.out.println("Starting writing the colorMap to file.");
-			
-		    File outputfile = new File(game.getGlobalVars().workspace + "\\" + testResultXML.name + "_colorMap.png");
-		    ImageIO.write(colorMap, "png", outputfile);
-		} catch (IOException e) {
-		    e.printStackTrace();
-		}
+//		BufferedImage colorMap = ImageTools.generateColorMapImage(testResultXML);
+//		try {
+//			System.out.println("Starting writing the colorMap to file.");
+//			
+//		    File outputfile = new File(game.getGlobalVars().workspace + "\\" + testResultXML.name + "_colorMap.png");
+//		    ImageIO.write(colorMap, "png", outputfile);
+//		} catch (IOException e) {
+//		    e.printStackTrace();
+//		}
 		
 	//"Save" files
+		System.out.println("Saving reflist & results...");
 		if(testRefListXML !=null) xmlWriter.writeXML_refList(game.getGlobalVars().workspace + "\\new_refList.xml", testRefListXML);
 		if(testResultXML !=null) xmlWriter.writeXML_result(game.getGlobalVars().workspace + "\\new_result.xml", testResultXML);
-		System.exit(0); //TODO: We will now exit immediately while we do not have a GUI anyway
+	//Test validity of created files:
+		System.out.println("Testing validity of refList & results...");
+		testRefListXML = xmlReader.readXML_refList(game.getGlobalVars().workspace + "\\new_refList.xml");
+		if(testRefListXML!=null) testResultXML = xmlReader.readXML_result(testRefListXML, game.getGlobalVars().workspace + "\\new_result.xml");
+		/*Test:*/ System.out.println("Name of id=50: " + testRefListXML.getImage(50).getName());
+		System.out.println("DONE! Exiting program.");
+		System.exit(0); //TODO: We will now exit immediately while we do not have a GUI
 	}
 
 	private void runBruteForceUnique(ResultXML testResultXML, ImageRefList testRefListXML){

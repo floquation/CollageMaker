@@ -17,7 +17,7 @@ public class Image{
 	/** Custom name given by the user. Public because changing it has no harm. */
 	private String name;
 	private Color color;
-	
+		
 	//Clipping:
 	private Rectangle srcClip;
 	
@@ -28,6 +28,14 @@ public class Image{
 		this.color = color;
 	}
 	
+	/**
+	 * Change the name to <name>.
+	 * 
+	 * <p>
+	 * Any '/' and '\' are replaced with a '_', since that gives problems with paths.
+	 * 
+	 * @param name
+	 */
 	public void setName(String name){
 		this.name = name;
 		this.name = this.name.replace("\\", "_");
@@ -40,12 +48,22 @@ public class Image{
 		return pwd;
 	}
 	
+	/**
+	 * Returns the color of the present image.
+	 * Returns null if it has not yet been computed.
+	 * 
+	 * TODO: Check for change of file, then set color to null.
+	 * 
+	 * @return
+	 */
 	public Color getColor(){
-		if(color!=null)
-			return color;
-		
-		recomputeImage();
 		return color;
+		
+//		if(color!=null)
+//			return color;
+//		
+//		recomputeImage();
+//		return color;
 	}
 	
 	/**
@@ -57,6 +75,13 @@ public class Image{
 		return srcClip.clone();
 	}
 	
+	/**
+	 * Returns the BufferedImage instance belonging to this image.
+	 * If not yet in heap memory, requires loading from disk (SLOW!).
+	 * Returns null if invalid.
+	 * 
+	 * @return BufferedImage
+	 */
 	public BufferedImage getImage(){
 		if(bi==null)
 			generateImage();
@@ -75,9 +100,11 @@ public class Image{
 	}
 	
 	/**
-	 * Disposing the current BufferedImage instance and reloads the image from file.
+	 * Disposes the current BufferedImage instance and reloads the image from file.
+	 * 
+	 * @return True if a BufferedImage was generated. False if IO errors (e.g. not an image).
 	 */
-	public void generateImage(){
+	public boolean generateImage(){
 		System.out.println("(Image) Starting loading image from file: \"" + pwd + "\".");
 		if(bi!=null){
 			bi.flush();
@@ -89,23 +116,29 @@ public class Image{
 			try {
 				bi = ImageIO.read(file);
 				if(bi==null){
-					System.err.println("File \"" + pwd + "\" is not a valid image file. Are you sure it is an image? Cannot load image.\n" +
+					System.err.println("(Image) File \"" + pwd + "\" is not a valid image file. Are you sure it is an image? Cannot load image.\n" +
 							"If this error occurs during loading of a whole FileSystem, it probably means there are non-image files there -> Ignore this message.");
 				}else{
 					//Success!!
+					return true;
 				}
 			} catch (IOException e) {
 				if(file.isDirectory()){
 					System.err.println("File \"" + pwd + "\" is a directory. Cannot load image.");
-				}else{
+				}else{	// Other errors:
 					System.err.println(e.getMessage());
 				}
 			}				
 		}else{
 			System.err.println("File \"" + pwd + "\" not found. Cannot load image.");
 		}
+		return false; //True was not returned on success, so it must have failed.
 	}
 	
+	/**
+	 * Ensures clip is correct and recomputes the color of this image.
+	 * WARNING: Requires to load BI. Slow if it is not yet loaded.
+	 */
 	public void recomputeImage(){
 		BufferedImage bi = getImage();
 		if(bi==null){
@@ -117,7 +150,8 @@ public class Image{
 	}
 	
 	/**
-	 * Crops the current srcClip into the image
+	 * Crops the current srcClip into the image.
+	 * WARNING: Slow if BI is not yet loaded. Otherwise 'instant'.
 	 * 
 	 * @author Kevin van As
 	 * @param Rectangle representing the srcClip. This parameter will be changed by this method.
@@ -129,6 +163,7 @@ public class Image{
 		srcClip.w = -srcClip.x + Math.min(Math.max(srcClip.w+srcClip.x, 0),bi.getWidth());
 		srcClip.h = -srcClip.y + Math.min(Math.max(srcClip.h+srcClip.x, 0),bi.getHeight());		
 	}
+	
 	
 	/**
 	 * Overrides the srcClip parameter.
@@ -147,6 +182,7 @@ public class Image{
 			}
 		}
 	}
+	
 	
 	/**
 	 * Sets the "srcClip" parameter to the maximum dimensions possible.
@@ -173,16 +209,17 @@ public class Image{
 	public static final int SMARTCLIP_CENTERED = 0;
 	/** The srcClip will end guaranteedly in the top-right corner. */
 	public static final int SMARTCLIP_TOPRIGHT = 1;
+	
 	/**
 	 * Computes the "srcClip" based on the hints specified by the user.
-	 * 
+	 * <p>
 	 * WARNING: This requires BufferedImage to be loaded, which is a very slow operation.
 	 * If it is already loaded, this method is, however, instant.
 	 * 
 	 * @author Kevin van As
-	 * @param aspectRatio: height/width of the final image
-	 * @param grid_aspectRatio: is height/width of the grid: grid.size.h/grid.size.w
-	 * @param smartclip_position: Anchor position of the clip, choose between: {Image.SMARTCLIP_BOTLEFT,Image.SMARTCLIP_CENTERED,Image.SMARTCLIP_TOPRIGHT}
+	 * @param aspectRatio : height/width of the final image
+	 * @param grid_aspectRatio : is height/width of the grid: grid.size.h/grid.size.w
+	 * @param smartclip_position : Anchor position of the clip, choose between: {Image.SMARTCLIP_BOTLEFT,Image.SMARTCLIP_CENTERED,Image.SMARTCLIP_TOPRIGHT}
 	 */
 	public void smartClip(double aspectRatio, double grid_aspectRatio, int smartclip_position){
 		if(aspectRatio<=0 || grid_aspectRatio <= 0){
@@ -196,16 +233,16 @@ public class Image{
 			double img_aspectRatio = ((double)bi.getHeight())/bi.getWidth();
 			double trgt_aspectRatio = aspectRatio/grid_aspectRatio;
 
-			System.out.println("img_aspectRatio = " + img_aspectRatio);
-			System.out.println("trgt_aspectRatio = " + trgt_aspectRatio);
+			System.out.println("(Image) img_aspectRatio = " + img_aspectRatio);
+			System.out.println("(Image) trgt_aspectRatio = " + trgt_aspectRatio);
 			
 			if(img_aspectRatio < trgt_aspectRatio){
-				System.out.println("height maximal");
+				System.out.println("(Image) height maximal");
 				//width cannot be filled, height is filled maximally
 				srcClip.h = bi.getHeight();
 				srcClip.w = (int)Math.ceil(srcClip.h/trgt_aspectRatio);
 			}else{
-				System.out.println("width maximal");
+				System.out.println("(Image) width maximal");
 				//height cannot be filled, width is filled maximally
 				srcClip.w = bi.getWidth();
 				srcClip.h = (int)Math.ceil(srcClip.w*trgt_aspectRatio);

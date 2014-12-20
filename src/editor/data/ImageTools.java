@@ -20,7 +20,7 @@ public abstract class ImageTools {
 	 */
 	public static Color computeAvgColor(Image img){
 		System.out.println("Computing the average color for \"" + img.getName() + "\".");
-		img.generateImage(); //Generates the image, which will automatically correct srcClip if it is incorrect.
+//		img.generateImage(); //Generates the image, which will automatically correct srcClip if it is incorrect.
 		Rectangle imgSrcClip = img.getClipRect();
 		return computeAvgColor(img,imgSrcClip);
 	}

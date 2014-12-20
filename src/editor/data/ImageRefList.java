@@ -45,8 +45,19 @@ public class ImageRefList {
 	}
 	
 /* ImageRefListXML methods: */
-		
-	public boolean importImage(String pwd){
+	
+	/**
+	 * Attempts to import a image from a file described by "pwd": the path of the image.
+	 * Returns true if "pwd" exists. False otherwise.
+	 * <p>
+	 * If "checkExistence" is set to true, then the file is loaded to validate that it is indeed an image.
+	 * If it is set to false, this check is not performed: existence of the file is enough to return true.
+	 * 
+	 * @param pwd
+	 * @param checkExistance
+	 * @return
+	 */
+	public boolean importImage(String pwd, boolean checkExistence){
 		String[] pwdSplit = pwd.split("\\\\");
 		String name = ".../";
 		for(int i = Math.max(0, pwdSplit.length-2); i<pwdSplit.length; i++){
@@ -58,12 +69,17 @@ public class ImageRefList {
 //		System.out.println("imgName = " + name);
 
 		Image newImg = new Image(pwd, name, 0, 0, 0, 0, null);
+		
+		if(!checkExistence){ //We are done if we need not check if the file is truly an image.
+			this.put(newImg);
+			return true;
+		}
+		
 		//Will automatically generate the BufferedImage and set srcClip appropriately. Color remains null.:
-		BufferedImage bi = newImg.getImage(); //To see if it exists
+		BufferedImage bi = newImg.getImage(); //Just to see if it exists
 		
 		if(bi!=null){
 			newImg.maximizeClip();
-			this.put(newImg);
 			newImg.clearImage(); // We are guaranteed to run out of memory if we keep all images in memory.
 			return true;
 		}
@@ -72,49 +88,61 @@ public class ImageRefList {
 	
 	/**
 	 * Recursive helper-method of "importImagesFromFileSystem(String dirPwd)"
+	 * <p>
+	 * "checkExistence" determines whether the Image needs to be loaded to see whether it is a valid image.
+	 * If false, the Image class is prepared, but no validity check is performed (which is very slow).
 	 * 
 	 * @author Kevin van As
 	 * @param dirPwd
+	 * @param checkExistence
 	 */
-	private void importImagesRecursively(File parent){
+	private void importImagesRecursively(File parent, boolean checkExistence){
 //		System.out.println("parent = " + parent.getPath());
 //		System.out.println("abs? " + parent.isAbsolute());
 //		System.out.println("dir? " + parent.isDirectory());
 //		System.out.println("exists? " + parent.exists());
-		if(parent==null || !parent.exists()) return;
+		if(parent==null || !parent.exists()){ System.out.println("Parent does not exist or is null."); return;}
 		
 		if(parent.isDirectory()){
 			System.out.println("-- Reading directory: " + parent.getPath() + " --");
 			File[] children = parent.listFiles();
 						
 			for(File child : children){
-				importImagesRecursively(child);
+				importImagesRecursively(child, checkExistence);
 			}
 		}else{
 			//`parent' is not a directory, check if it is an image
-			importImage(parent.getAbsolutePath());
+			importImage(parent.getAbsolutePath(), checkExistence);
 			//If it is not an image, a non-blocking error is automatically shown by the importImage method.
 		}
 	}
 	
 	/**
 	 * Recursively imports images from the given directory.
+	 * <p>
+	 * "checkExistence" determines whether the Image needs to be loaded to see whether it is a valid image.
+	 * If false, the Image class is prepared, but no validity check is performed (which is very slow).
 	 * 
 	 * @author Kevin van As
 	 * @param dirPwd
+	 * @param checkExistence
 	 */
-	public void importImagesFromFileSystem(String dirPwd){
-		importImagesRecursively(new File(dirPwd));
+	public void importImagesFromFileSystem(String dirPwd, boolean checkExistence){
+		importImagesRecursively(new File(dirPwd), checkExistence);
 	}
 	
 	/**
 	 * Recursively imports images from the given directory.
+	 * <p>
+	 * "checkExistence" determines whether the Image needs to be loaded to see whether it is a valid image.
+	 * If false, the Image class is prepared, but no validity check is performed (which is very slow).
 	 * 
 	 * @author Kevin van As
 	 * @param dirPwd
+	 * @param checkExistence
 	 */
-	public void importImagesFromFileSystem(URI dirPwd){
-		importImagesRecursively(new File(dirPwd));
+	public void importImagesFromFileSystem(URI dirPwd, boolean checkExistence){
+		importImagesRecursively(new File(dirPwd), checkExistence);
 	}
 	
 	private int idcounter = 0;
@@ -131,7 +159,7 @@ public class ImageRefList {
 		while(images.containsKey(idcounter)){
 			idcounter++;
 		}
-		System.out.println("ImageRefList: Generated ID = " + idcounter);
+//		System.out.println("ImageRefList: Generated ID = " + idcounter);
 		return idcounter;
 	}
 	
