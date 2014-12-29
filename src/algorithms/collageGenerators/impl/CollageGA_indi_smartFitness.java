@@ -5,6 +5,7 @@ import java.awt.Color;
 import algorithms.collageGenerators.CollageAlgorithmUtils;
 import algorithms.collageGenerators.template.CollageAlgorithm;
 import algorithms.collageGenerators.template.GeneticAlgorithm;
+import algorithms.collageGenerators.template.GeneticAlgorithm.Chromosome;
 import editor.data.ImageRefList;
 import editor.data.ResultXML;
 
@@ -46,7 +47,7 @@ public class CollageGA_indi_smartFitness extends CollageGA_indi {
 			Color colorFit = colAlg.refList.getImage(colAlg.keyList.get(chrom.data[i])).getColor(); //TODO: null-pointer if the refList is changed concurrently such that the requested ID no longer exists.
 			Color colorTarget = colAlg.result.grid.elements[x][y].color;
 			
-			errorSq += getDuplicity(chrom, x, y)*CollageAlgorithmUtils.errorSq(colorFit,colorTarget,colAlg.result);
+			errorSq += Math.pow(10,getDuplicity(chrom, x, y)-1)*CollageAlgorithmUtils.errorSq(colorFit,colorTarget,colAlg.result);
 		}
 		
 //		System.out.println("(CollageGA) Fitness = " + 1/errorSq);
@@ -69,7 +70,7 @@ public class CollageGA_indi_smartFitness extends CollageGA_indi {
 	private int getDuplicity(Chromosome chrom, int x, int y){
 		int count = 0; //becomes 1 automatically when comparing with self
 		
-		int stencilOffset = 2; //TODO: Modifiable square
+		int stencilOffset = 5; //TODO: Modifiable square
 		int cell = x+y*colAlg.result.grid.size.w;
 		int xnb_ini = Math.max(0, x-stencilOffset);
 		int xnb_end = Math.min(colAlg.result.grid.size.w, x+stencilOffset);
@@ -87,5 +88,27 @@ public class CollageGA_indi_smartFitness extends CollageGA_indi {
 	
 	//TODO: Test the getDuplicity() method
 	//TODO: smartMutate should use the getDuplicity() method as well -> Override mutate()?
+	
+	
+	@Override
+	protected void mutate(Chromosome chrom) {
+		double[] errorArray = CollageAlgorithmUtils.constructErrorVector(chrom.data, colAlg);
+		
+		for(int i = 0; i<errorArray.length; i++){ // Take duplicity into account
+			int x = i%colAlg.result.grid.size.w;
+			int y = (i-x)/colAlg.result.grid.size.w;
+			errorArray[i] *= Math.pow(10,getDuplicity(chrom, x, y)-1);
+		}
+//		System.out.println("Mutating " + chrom);
+		
+		//Possibly repeat the process:
+		do{
+			int randomID = rouletteWheel(errorArray); //random (Roulette Wheel) mutation spot
+			chrom.data[randomID] = (int)(Math.random()*colAlg.keyList.size()); //change to a random image (possibly the same, but those odds are extremely small anyway)
+		}while(shouldWe(this.pMutateRepeat));
+		
+//		System.out.println("@" + randomID + "; changed to " + chrom.data[randomID]);
+//		System.out.println("Result   " + chrom);
+	}
 	
 }

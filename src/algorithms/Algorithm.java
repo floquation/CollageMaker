@@ -44,14 +44,15 @@ public abstract class Algorithm {
 	
 	/**
 	 * Starts the execution of the algorithm.
-	 * 
+	 * <p>
 	 * Checklist:
+	 * <p>
 	 *  - Have you set the termination criteria? Otherwisely you have an infinite loop.
-	 * 
+	 * <p>
 	 * If not, default values are used.
 	 * 
-	 * 
-	 * <synchronized> ensures that the algorithm cannot be executed twice simultaneously.
+	 * <p>
+	 * "synchronized" ensures that the algorithm cannot be executed twice simultaneously.
 	 * TODO: Is this the correct way to do it?
 	 * 
 	 * @author Kevin van As

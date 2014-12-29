@@ -28,6 +28,7 @@ import editor.data.Image;
 import editor.data.ImageRefList;
 import editor.data.ImageTools;
 import editor.data.ResultXML;
+import editor.data.ResultXML.Size;
 import editor.io.xmlReader;
 import editor.io.xmlWriter;
 import framework.Game;
@@ -42,8 +43,11 @@ public class EditorScreen extends Screen {
 	}
 						
 	private static boolean newImages = false;
+	private static boolean newMain = true;
+	private static boolean checkValidity = false;
 	
-	private static boolean runCheckAll = false;
+	
+	private static boolean runCheckAll = false; //false;
 	private static boolean runCheckAllROUnique = false;
 	private static boolean runBruteForceUnique = false;
 	private static boolean runBruteForceUnique2 = false;
@@ -52,7 +56,7 @@ public class EditorScreen extends Screen {
 	private static boolean runGA = false;
 	private static boolean runGAIndi = false;
 	private static boolean runGAIndiSmartFitness = true; //true;
-	private static boolean runGAUnique = false;
+	private static boolean runGAUnique = false; //false
 	private static boolean rerunAlgorithm =
 			 runBruteForceUnique2 || runBruteForceUnique3 || runBruteForceUnique4 ||
 			 runBruteForceUnique || runCheckAll || runGA || runGAIndi || runGAUnique ||
@@ -63,18 +67,18 @@ public class EditorScreen extends Screen {
 		
 		//Test:
 		ImageRefList testRefListXML = xmlReader.readXML_refList(game.getGlobalVars().workspace + "\\refList.xml");
+		if(testRefListXML == null)	testRefListXML = new ImageRefList();	//auto-default if corrupted file
 		ResultXML testResultXML;
 		if(!rerunAlgorithm){
 			testResultXML = xmlReader.readXML_result(testRefListXML, game.getGlobalVars().workspace + "\\new_result.xml"); //load old result for postprocessing reasons.
 		}else{
 			testResultXML = xmlReader.readXML_result(testRefListXML, game.getGlobalVars().workspace + "\\result.xml");
 		}
-		
-		System.out.println("orgImageId = " + testResultXML.orgImageId);
-		System.out.println(ArrayUtils.toString(testResultXML.grid.elements));
-		
 		if(testResultXML == null)	testResultXML = new ResultXML(); 		//auto-default if corrupted file
-		if(testRefListXML == null)	testRefListXML = new ImageRefList();	//auto-default if corrupted file
+		
+//		System.out.println("orgImageId = " + testResultXML.orgImageId);
+//		System.out.println(ArrayUtils.toString(testResultXML.grid.elements));
+		
 		
 //		if(testRefListXML !=null) testRefListXML = xmlReader.readXML_refList(game.getGlobalVars().workspace + "\\new_refList.xml");
 //		if(testResultXML !=null) testResultXML = xmlReader.readXML_result(testRefListXML, game.getGlobalVars().workspace + "\\new_result.xml");
@@ -88,7 +92,7 @@ public class EditorScreen extends Screen {
 		
 	//Test: importImagesRecursively
 		if(newImages){
-			testRefListXML.importImagesFromFileSystem("\\\\EQUIP_BUP\\photo\\2010\\10_10\\", false);
+			testRefListXML.importImagesFromFileSystem("\\\\EQUIP_BUP\\photo\\2010\\", false);
 		}
 		
 //		System.out.println("absolute path = " + new File("\\..\\This PC\\Equip_bup\\Foto\\2010").getAbsolutePath());
@@ -131,40 +135,53 @@ public class EditorScreen extends Screen {
 
 	
 	//Select "main":
-		testResultXML.orgImageId=1799;
-		ImageTools.computeAvgColorGrid(testResultXML, testRefListXML.getImage(testResultXML.orgImageId));	
+	if(newMain){
+		testResultXML.orgImageId=6134;
+		testResultXML.grid.size = new ResultXML.Size(50, 50);
+		//Compute colors: (this method sets grid.elements to a properly-sized array)
+		ImageTools.computeAvgColorGrid(testResultXML, testRefListXML.getImage(testResultXML.orgImageId));
+	}
 		double aspectRatio = (
 				(double)testRefListXML.getImage(testResultXML.orgImageId).getImage().getHeight())/
 				testRefListXML.getImage(testResultXML.orgImageId).getImage().getWidth();
-		testResultXML.size.w=2000;
+		testResultXML.size.w=10000;
 		testResultXML.size.h=(int)(testResultXML.size.w*aspectRatio);	
 
 //		System.out.println("orgImageId = " + testResultXML.orgImageId);
 //		System.out.println(ArrayUtils.toString(testResultXML.grid.elements));
+	
+	
+		//Testing:
+//		Set<Integer> keySettmp = testRefListXML.keySet();
+//		for (int key: keySettmp){
+//			Image img = testRefListXML.getImage(key);
+//			System.out.println(img.getName() + " has color: " + img.getColor());
+//		}
 		
-		Set<Integer> keySettmp = testRefListXML.keySet();
-		for (int key: keySettmp){
-			Image img = testRefListXML.getImage(key);
-			System.out.println(img.getName() + " has color: " + img.getColor());
-		}
-		
-	if(newImages){
-	//Compute colors: (this method sets grid.elements to a properly-sized array)
+		//Check Validity & {Clip + Compute Colors}.
+	if( /*( (newImages) && (rerunAlgorithm) ) ||*/ checkValidity){
 		double grid_aspectRatio = ((double)testResultXML.grid.size.h)/testResultXML.grid.size.w;
-		Set<Integer> keySet = testRefListXML.keySet();
-		for (int key: keySet){
-			Image img = testRefListXML.getImage(key);
-//			System.out.println("generate image");
-			img.generateImage();
-//			System.out.println("recompute image");
-//			img.recomputeImage();
-//			System.out.println("smartClip");
-			img.smartClip(aspectRatio, grid_aspectRatio, Image.SMARTCLIP_CENTERED); // Smart-clip & compute color
-//			System.out.println("clear");
-			img.clearImage();
+		java.util.List<Integer> keyList = testRefListXML.keyList();
+		for (int key: keyList){
+			boolean isValid = testRefListXML.checkValidity(key, false, false);
+			if(isValid){
+				Image img = testRefListXML.getImage(key);
+	//			System.out.println("generate image");
+				img.getImage();
+	//			System.out.println("recompute image");
+	//			img.recomputeImage();
+	//			System.out.println("smartClip");
+				img.smartClip(aspectRatio, grid_aspectRatio, Image.SMARTCLIP_CENTERED); // Smart-clip & compute color
+	//			System.out.println("clear");
+				img.clearImage();
+			}
 		}
+		keyList = null;
+	}else{
+		//testRefListXML.checkAllValidity(true);		//TODO: When to check validity? MUST be before executing algorithm.
 	}
-		
+	
+	
 	//Genetic Algorithm:
 		if(runGA) runGA(testResultXML, testRefListXML);
 		if(runGAIndi) runGAIndi(testResultXML, testRefListXML);
@@ -183,7 +200,7 @@ public class EditorScreen extends Screen {
 		if(runBruteForceUnique4) runBruteForceUnique4(testResultXML, testRefListXML);
 		
 		if(rerunAlgorithm){
-			System.out.println("UnicityMap = " + CollageAlgorithmUtils.getGlobalUnicityMap(testResultXML, testRefListXML).toString());
+//			System.out.println("UnicityMap = " + CollageAlgorithmUtils.getGlobalUnicityMap(testResultXML, testRefListXML).toString());
 		}
 		
 	//Other output:
@@ -496,14 +513,14 @@ public class EditorScreen extends Screen {
 		CollageGA_indi_smartFitness ga = new CollageGA_indi_smartFitness(
 				testResultXML.grid.size.w*testResultXML.grid.size.h,	//chromLength
 				30,					//populationSize
-				0.8f,				//pCrossover
-				0.4f,				//lCrossover
-				0.5f,				//pMutate
-				0f,					//pMutateRepeat
-				10,					//nElitism
+				0.4f,				//pCrossover
+				0.2f,				//lCrossover
+				0.8f,				//pMutate
+				0.3f,				//pMutateRepeat
+				3,					//nElitism
 				100000d,			//fitnessGoal
 				0.01f,				//pExtinction
-				true,				//applyRelativeExtinction
+				false,				//applyRelativeExtinction
 				1e-6d,				//extinctErrorIniThreshold
 				1e-5d,				//extinctErrorThreshold
 				1e-3d,				//extinctErrorRelThreshold
@@ -512,7 +529,7 @@ public class EditorScreen extends Screen {
 				testResultXML		//ResultXML
 				);
 		
-		ga.setMaxExecTime(60);
+		ga.setMaxExecTime(3600);
 //		ga.setMaxNumIter(2000);
 		ga.run();
 		

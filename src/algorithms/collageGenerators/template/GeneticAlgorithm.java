@@ -349,7 +349,7 @@ public abstract class GeneticAlgorithm<T> extends LoopingAlgorithm {
 	 * Provides an iterator over the {@code chromosomes} set, which contains all current chromosomes.
 	 * (I.e., between iterations.)
 	 * 
-	 * @return Iterator<Chromosome>
+	 * @return Iterator < Chromosome >
 	 */
 	public Iterator<Chromosome> getChromosomesIterator(){
 		return chromosomes.iterator();
@@ -423,7 +423,7 @@ public abstract class GeneticAlgorithm<T> extends LoopingAlgorithm {
 		}
 		onIterEnd();
 		
-		//From this line onward, we now have a new population!
+	  //From this line onwards, we now have a new population!
 		
 		//Prepare for the next iteration
 		chromosomes.clear();

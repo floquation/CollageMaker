@@ -67,7 +67,7 @@ public abstract class CollageAlgorithmUtils {
 	/**
 	 * Computes a vector containing the errors of the images represented in {@code data}.
 	 * {@code colAlg.result} is used for the size of the grid (to convert 1D vector to 2D array format) and to read the ColorMap of the target image.
-	 * {@code colAlg.refList} is used to obtain image colors
+	 * {@code colAlg.refList} is used to obtain image colors.
 	 * {@code colAlg.keyList} is a fixed-order List which converts the indices in data to imgIDs to be read by {@code colAlg.refList}.
 	 * And thus {@code data} contains indices of the {@code colAlg.keyList} array, not actual imgIDs.
 	 * 

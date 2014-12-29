@@ -113,8 +113,8 @@ public class CollageGA_indi extends CollageGA {
 	}
 	
 	/**
-	 * Takes all genes with a squared error above <error_threshold> and randomly mutates them.
-	 * Also takes all genes which are a factor <error_rel_threshold> above the optimal gene
+	 * Takes all genes with a squared error above "error_threshold" and randomly mutates them.
+	 * Also takes all genes which are a factor "error_rel_threshold" above the optimal gene
 	 * (as computed by the brute-forcing CheckAll algorithm, which runs in O(NxM) time,
 	 * where N is the number of target cells (e.g. 2500 for 50x50) and M the number of available images).
 	 */
@@ -136,7 +136,7 @@ public class CollageGA_indi extends CollageGA {
 		while(it.hasNext()){
 			Chromosome chrom = it.next();
 //		for(Chromosome chrom : chromosomes){
-			if(chrom.getFitness()==bestFitness/*bestChrom.getFitness()*/) continue; //elitism with the very best -> don't throw our best solution away
+			if(chrom.getFitness()==bestFitness/*bestChrom.getFitness()*/) continue; //elitism with the very best (ignoring nElitism) -> don't throw our best solution away
 //			boolean best;
 //			if(chrom == getBestChromosome(chromosomes)){
 //				best = true;

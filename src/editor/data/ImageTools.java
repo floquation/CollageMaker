@@ -3,6 +3,7 @@ package editor.data;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.util.Map;
@@ -222,6 +223,8 @@ public abstract class ImageTools {
 		double elemHeight = ((double)resultXML.size.h)/resultXML.grid.size.h;
 
 		Graphics2D g = newImg.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		
 //		System.out.println("(x,y,w,h) = (" + lastX + ", " + lastY + ", " + elemWidth + ", " + elemHeight + ");");
 		for(int x = 0; x<resultXML.grid.size.w; x++){
@@ -240,6 +243,7 @@ public abstract class ImageTools {
 						srcClip.y+srcClip.h,		//src_y2
 						null						//observer
 						);
+				img.clearImage();
 				
 		    	lastY += elemHeight;
 			}
@@ -378,7 +382,7 @@ public abstract class ImageTools {
 		
 		
 		Graphics g = newImg.createGraphics();
-		g.drawImage(img.getImage(),
+		g.drawImage(bi,
 				0,					//dst_x1
 				0,					//dst_y1
 				width,		//dst_x2
@@ -389,6 +393,8 @@ public abstract class ImageTools {
 				srcClip.y+srcClip.h,		//src_y2
 				null						//observer
 				);
+
+		img.clearImage();
 		
 		return newImg;
 	}
@@ -402,8 +408,8 @@ public abstract class ImageTools {
 		
 		double lastX = 0;
 		double lastY = 0;
-		double elemWidth = 1;//((double)result.size.w)/result.grid.size.w;
-		double elemHeight = 1;//((double)result.size.h)/result.grid.size.h;
+		double elemWidth = 20;//((double)result.size.w)/result.grid.size.w;
+		double elemHeight = 20;//((double)result.size.h)/result.grid.size.h;
 		
 		double minValue = ArrayUtils.min(array);
 		double maxValue = ArrayUtils.max(array);

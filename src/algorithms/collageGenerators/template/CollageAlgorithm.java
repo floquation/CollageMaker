@@ -6,6 +6,14 @@ import java.util.List;
 import editor.data.ImageRefList;
 import editor.data.ResultXML;
 
+/**
+ * Holds track of the refList and result file.
+ * Also holds the keySet in a copied form: a keyList (which has a fixed order).
+ * If the keySet changes, this class is NOT notified and thus the algorithm continues with the old keyList.
+ * 
+ * @author Kevin van As
+ *
+ */
 public class CollageAlgorithm {
 
 	public ResultXML result;

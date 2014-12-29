@@ -3,7 +3,9 @@ package editor.data;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,6 +44,54 @@ public class ImageRefList {
 	}
 	public Set<Integer> keySet(){
 		return images.keySet();
+	}
+	public List<Integer> keyList(){
+		return new ArrayList<Integer>(images.keySet());
+	}
+
+	/**
+	 * Checks whether the image belonging to the given "id" is valid.
+	 * "Valid" means that it is indeed an image.
+	 * <p>
+	 * Removes the image from the list if it is invalid. TODO: Prompt user.
+	 * 
+	 * @param id : id of the image-to-be-checked
+	 * @param computeColors : compute colors while the images are loaded anyway? Relatively cheap if it has to be done sometime anyway...
+	 * @param autoDispose : dispose BufferedImage automatically? If false, responsibility for the user to remove it!
+	 * @return
+	 */
+	public void checkAllValidity(boolean computeColors, boolean autoDispose){
+		for(int key : this.keyList()){ //keyList to prevent ConcurrentModificationException, since checkValidity will remove invalid images.
+			this.checkValidity(key,computeColors, autoDispose);
+		}
+	}
+	
+	/**
+	 * Checks whether the image belonging to the given "id" is valid.
+	 * "Valid" means that it is indeed an image.
+	 * <p>
+	 * Removes the image from the list if it is invalid. TODO: Prompt user.
+	 * 
+	 * @param id : id of the image-to-be-checked
+	 * @param computeColor : compute color while the image is loaded anyway? Relatively cheap if it has to be done sometime anyway...
+	 * @param autoDispose : dispose BufferedImage automatically? If false, responsibility for the user to remove it!
+	 * @return
+	 */
+	public boolean checkValidity(int id, boolean computeColor, boolean autoDispose){
+		Image img = this.getImage(id);
+		BufferedImage bi = img.getImage(); //Just to see if it exists
+		
+		if(bi!=null){ // It exists!
+			if(computeColor){
+				img.recomputeImage();
+			}
+			if(autoDispose) img.clearImage(); // We are guaranteed to run out of memory if we keep all images in memory.
+			return true;
+		}
+		//It does not exist! Remove from the list.
+		// TODO: Prompt user something instead...
+		images.remove(id);
+		return false;
 	}
 	
 /* ImageRefListXML methods: */

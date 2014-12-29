@@ -17,10 +17,13 @@ public class ResultXML {
 		public int w;
 		public int h;
 		
+		public Size(int wIn, int hIn){
+			w = wIn;
+			h = hIn;
+		}
+		
 		public Size clone(){
-			Size out = new Size();
-			out.w = w;
-			out.h = h;
+			Size out = new Size(w, h);
 			return out;
 		}
 	}
@@ -57,13 +60,9 @@ public class ResultXML {
 	public ResultXML(){
 		name = "generatedResult";
 		orgImageId = 4;
-		size = new Size();
-		size.w = 100;
-		size.h = 100;
+		size = new Size(100,100);
 		grid = new Grid();
-		grid.size = new Size();
-		grid.size.w = 10;
-		grid.size.h = 10;
+		grid.size = new Size(10, 10);
 	}
 	
 	public ResultXML clone(){
